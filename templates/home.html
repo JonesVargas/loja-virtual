@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minha Loja</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-logo">
+        <a href="/">Minha Loja</a>
+      </div>
+
+      <div class="nav-links">
+        <a href="#promocoes">Promoções</a>
+        <a href="#produtos">Produtos</a>
+        <a href="#redes">Redes Sociais</a>
+        <a href="#contato">Contato</a>
+      </div>
+    </nav>
+    <!-- TOPO -->
+    
+
+    <!-- CARROSSEL -->
+    
+    <section class="hero-slider">
+      <div class="slider-container">
+        {% for banner in banners %}
+        <div class="slide {% if forloop.first %}active{% endif %}">
+          <img src="{{ banner.imagem.url }}" alt="{{ banner.titulo }}" />
+          <div class="slide-overlay"></div>
+          <div class="slide-content">
+            <span class="slide-badge">Bem-vindo à nossa loja</span>
+            <h2>{{ banner.titulo }}</h2>
+            {% if banner.subtitulo %}
+            <p>{{ banner.subtitulo }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %} {% if banners|length > 1 %}
+        <button class="slider-btn prev" type="button">&#10094;</button>
+        <button class="slider-btn next" type="button">&#10095;</button>
+        {% endif %}
+      </div>
+    </section>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const slides = document.querySelectorAll(".slide");
+        const nextBtn = document.querySelector(".next");
+        const prevBtn = document.querySelector(".prev");
+
+        if (slides.length <= 1) return;
+
+        let current = 0;
+
+        function showSlide(index) {
+          slides.forEach((slide, i) => {
+            slide.classList.remove("active");
+            if (i === index) {
+              slide.classList.add("active");
+            }
+          });
+        }
+
+        function nextSlide() {
+          current = (current + 1) % slides.length;
+          showSlide(current);
+        }
+
+        function prevSlide() {
+          current = (current - 1 + slides.length) % slides.length;
+          showSlide(current);
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener("click", nextSlide);
+        }
+
+        if (prevBtn) {
+          prevBtn.addEventListener("click", prevSlide);
+        }
+
+        setInterval(nextSlide, 4000);
+      });
+    </script>
+
+    <!-- REDES SOCIAIS -->
+    <section class="redes">
+      <h2>Siga-nos</h2>
+      <div class="botoes-redes">
+        {% for rede in redes %}
+        <a href="{{ rede.url }}" target="_blank" class="btn-rede">
+          {{ rede.nome }}
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- PROMOÇÕES -->
+    <section class="secao">
+      <h2>🔥 Promoções</h2>
+      <div class="grid-produtos">
+        {% for produto in produtos_promocao %}
+        <div class="card-produto">
+          {% if produto.imagem %}
+          <img src="{{ produto.imagem.url }}" />
+          {% endif %}
+          <h3>{{ produto.nome }}</h3>
+          <p>{{ produto.descricao }}</p>
+          <div class="preco">R$ {{ produto.preco }}</div>
+        </div>
+        {% empty %}
+        <p>Sem promoções</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section class="secao">
+      <h2>🛒 Produtos</h2>
+      <div class="grid-produtos">
+        {% for produto in produtos %}
+        <div class="card-produto">
+          {% if produto.imagem %}
+          <img src="{{ produto.imagem.url }}" />
+          {% endif %}
+          <h3>{{ produto.nome }}</h3>
+          <p>{{ produto.descricao }}</p>
+          <div class="preco">R$ {{ produto.preco }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </body>
+</html>
