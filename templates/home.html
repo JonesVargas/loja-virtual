@@ -14,22 +14,28 @@
       </div>
 
       <div class="nav-links">
-        <a href="#promocoes">Promoções</a>
-        <a href="#produtos">Produtos</a>
-        <a href="#redes">Redes Sociais</a>
+        <a href="#inicio">Início</a>
+        {% for secao in secoes_home %} {% if secao.titulo %}
+        <a href="#secao-{{ secao.id }}">{{ secao.titulo }}</a>
+        {% else %}
+        <a href="#secao-{{ secao.id }}">{{ secao.nome }}</a>
+        {% endif %} {% endfor %}
         <a href="#contato">Contato</a>
       </div>
     </nav>
-    <!-- TOPO -->
-    
 
-    <!-- CARROSSEL -->
-    
-    <section class="hero-slider">
+    <!-- CARROSSEL / BANNER PRINCIPAL -->
+    <section class="hero-slider" id="inicio">
       <div class="slider-container">
         {% for banner in banners %}
         <div class="slide {% if forloop.first %}active{% endif %}">
-          <img src="{{ banner.imagem.url }}" alt="{{ banner.titulo }}" />
+          {% if banner.imagem %}
+          <img
+            src="{{ banner.imagem.url }}"
+            alt="{{ banner.titulo }}"
+            fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+          />
+          {% endif %}
           <div class="slide-overlay"></div>
           <div class="slide-content">
             <span class="slide-badge">Bem-vindo à nossa loja</span>
@@ -40,9 +46,132 @@
           </div>
         </div>
         {% endfor %} {% if banners|length > 1 %}
-        <button class="slider-btn prev" type="button">&#10094;</button>
-        <button class="slider-btn next" type="button">&#10095;</button>
+        <button
+          class="slider-btn prev"
+          type="button"
+          aria-label="Banner anterior"
+        >
+          &#10094;
+        </button>
+        <button
+          class="slider-btn next"
+          type="button"
+          aria-label="Próximo banner"
+        >
+          &#10095;
+        </button>
         {% endif %}
+      </div>
+    </section>
+
+    <!-- SEÇÕES DINÂMICAS -->
+    {% for secao in secoes_home %}
+    <section
+      class="secao secao-dinamica tipo-{{ secao.tipo }}"
+      id="secao-{{ secao.id }}"
+    >
+      <div class="container-secao">
+        {% if secao.titulo or secao.subtitulo %}
+        <div class="secao-topo">
+          {% if secao.titulo %}
+          <h2>{{ secao.titulo }}</h2>
+          {% endif %} {% if secao.subtitulo %}
+          <p class="secao-subtitulo">{{ secao.subtitulo }}</p>
+          {% endif %}
+        </div>
+        {% endif %} {% if secao.tipo == 'produtos' %}
+        <div class="grid-produtos">
+          {% for produto in secao.produtos.all %}
+          <article class="card-produto">
+            <div class="produto-imagem-wrap">
+              {% if produto.imagem %}
+              <img
+                src="{{ produto.imagem.url }}"
+                alt="{{ produto.nome }}"
+                loading="lazy"
+                decoding="async"
+              />
+              {% else %}
+              <div class="produto-sem-imagem">Sem imagem</div>
+              {% endif %}
+            </div>
+
+            <div class="produto-info">
+              <h3>{{ produto.nome }}</h3>
+              <p>{{ produto.descricao }}</p>
+            </div>
+          </article>
+          {% empty %}
+          <p class="sem-conteudo">Nenhum produto adicionado nesta seção.</p>
+          {% endfor %}
+        </div>
+        {% endif %} {% if secao.tipo == 'texto' %}
+        <div class="bloco-texto">
+          {% if secao.texto %}
+          <p>{{ secao.texto|linebreaksbr }}</p>
+          {% else %}
+          <p class="sem-conteudo">Nenhum texto cadastrado para esta seção.</p>
+          {% endif %}
+        </div>
+        {% endif %} {% if secao.tipo == 'texto_imagem' %}
+        <div class="bloco-texto-imagem">
+          <div class="texto-imagem-conteudo">
+            {% if secao.texto %}
+            <p>{{ secao.texto|linebreaksbr }}</p>
+            {% endif %} {% if secao.botao_texto and secao.botao_link %}
+            <a href="{{ secao.botao_link }}" class="btn-secao">
+              {{ secao.botao_texto }}
+            </a>
+            {% endif %}
+          </div>
+
+          <div class="texto-imagem-midia">
+            {% if secao.imagem %}
+            <img
+              src="{{ secao.imagem.url }}"
+              alt="{{ secao.titulo|default:secao.nome }}"
+              loading="lazy"
+              decoding="async"
+            />
+            {% else %}
+            <div class="imagem-placeholder">Imagem não cadastrada</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %} {% if secao.tipo == 'chamada' %}
+        <div class="bloco-chamada">
+          {% if secao.texto %}
+          <p>{{ secao.texto|linebreaksbr }}</p>
+          {% endif %} {% if secao.botao_texto and secao.botao_link %}
+          <a href="{{ secao.botao_link }}" class="btn-secao btn-chamada">
+            {{ secao.botao_texto }}
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </section>
+    {% endfor %}
+
+    <!-- CONTATO FIXO -->
+    <section class="secao contato-final" id="contato">
+      <div class="container-secao">
+        <div class="secao-topo">
+          <h2>Contato</h2>
+          <p class="secao-subtitulo">
+            Entre em contato conosco pelos nossos canais.
+          </p>
+        </div>
+
+        <div class="bloco-chamada">
+          <p>
+            Adicione aqui no HTML seus links fixos de WhatsApp, Instagram,
+            endereço ou outras informações.
+          </p>
+          <a href="https://wa.me/seunumero" class="btn-secao">
+            Solicitar orçamento
+          </a>
+        </div>
       </div>
     </section>
 
@@ -55,6 +184,7 @@
         if (slides.length <= 1) return;
 
         let current = 0;
+        let autoSlide;
 
         function showSlide(index) {
           slides.forEach((slide, i) => {
@@ -75,64 +205,31 @@
           showSlide(current);
         }
 
+        function startAutoSlide() {
+          autoSlide = setInterval(nextSlide, 5000);
+        }
+
+        function resetAutoSlide() {
+          clearInterval(autoSlide);
+          startAutoSlide();
+        }
+
         if (nextBtn) {
-          nextBtn.addEventListener("click", nextSlide);
+          nextBtn.addEventListener("click", function () {
+            nextSlide();
+            resetAutoSlide();
+          });
         }
 
         if (prevBtn) {
-          prevBtn.addEventListener("click", prevSlide);
+          prevBtn.addEventListener("click", function () {
+            prevSlide();
+            resetAutoSlide();
+          });
         }
 
-        setInterval(nextSlide, 4000);
+        startAutoSlide();
       });
     </script>
-
-    <!-- REDES SOCIAIS -->
-    <section class="redes">
-      <h2>Siga-nos</h2>
-      <div class="botoes-redes">
-        {% for rede in redes %}
-        <a href="{{ rede.url }}" target="_blank" class="btn-rede">
-          {{ rede.nome }}
-        </a>
-        {% endfor %}
-      </div>
-    </section>
-
-    <!-- PROMOÇÕES -->
-    <section class="secao">
-      <h2>🔥 Promoções</h2>
-      <div class="grid-produtos">
-        {% for produto in produtos_promocao %}
-        <div class="card-produto">
-          {% if produto.imagem %}
-          <img src="{{ produto.imagem.url }}" />
-          {% endif %}
-          <h3>{{ produto.nome }}</h3>
-          <p>{{ produto.descricao }}</p>
-          <div class="preco">R$ {{ produto.preco }}</div>
-        </div>
-        {% empty %}
-        <p>Sem promoções</p>
-        {% endfor %}
-      </div>
-    </section>
-
-    <!-- PRODUTOS -->
-    <section class="secao">
-      <h2>🛒 Produtos</h2>
-      <div class="grid-produtos">
-        {% for produto in produtos %}
-        <div class="card-produto">
-          {% if produto.imagem %}
-          <img src="{{ produto.imagem.url }}" />
-          {% endif %}
-          <h3>{{ produto.nome }}</h3>
-          <p>{{ produto.descricao }}</p>
-          <div class="preco">R$ {{ produto.preco }}</div>
-        </div>
-        {% endfor %}
-      </div>
-    </section>
   </body>
 </html>

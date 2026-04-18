@@ -12,16 +12,6 @@ class Banner(models.Model):
         return self.titulo
 
 
-class RedeSocial(models.Model):
-    nome = models.CharField(max_length=100)
-    url = models.URLField()
-    icone = models.CharField(max_length=50, blank=True, help_text="Ex.: instagram, facebook, whatsapp")
-    ativo = models.BooleanField(default=True)
-    ordem = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        return self.nome
-
 class Produto(models.Model):
     nome = models.CharField(max_length=200)
     descricao = models.TextField()
@@ -33,3 +23,33 @@ class Produto(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class SecaoHome(models.Model):
+    TIPOS_SECAO = [
+        ('produtos', 'Produtos'),
+        ('texto', 'Texto'),
+        ('texto_imagem', 'Texto com imagem'),
+        ('chamada', 'Chamada para ação'),
+    ]
+
+    nome = models.CharField(max_length=150)
+    tipo = models.CharField(max_length=30, choices=TIPOS_SECAO, default='produtos')
+    titulo = models.CharField(max_length=200, blank=True, null=True)
+    subtitulo = models.CharField(max_length=300, blank=True, null=True)
+    texto = models.TextField(blank=True, null=True)
+    imagem = models.ImageField(upload_to='secoes/', blank=True, null=True)
+    botao_texto = models.CharField(max_length=100, blank=True, null=True)
+    botao_link = models.CharField(max_length=300, blank=True, null=True)
+    produtos = models.ManyToManyField(Produto, blank=True, related_name='secoes_home')
+    ativa = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=0)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['ordem', 'id']
+        verbose_name = 'Seção da Home'
+        verbose_name_plural = 'Seções da Home'
+
+    def __str__(self):
+        return f"{self.ordem} - {self.nome}"
